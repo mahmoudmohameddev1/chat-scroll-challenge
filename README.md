@@ -21,6 +21,7 @@ Test these scenarios in the reference demo before you start coding. Start by sen
 4. While a response is streaming, scroll back down to the bottom.
 
 Your solution will be scored primarily on how closely it matches the reference. You are free to use any AI tools you'd like.
+---------------
 
 ## How to Submit
 
@@ -33,7 +34,9 @@ Your solution will be scored primarily on how closely it matches the reference. 
    - Include screen recordings for all five scenarios and the deployed URL below.
 5. Add **IMan-admin** as a collaborator to your private repo.
 6. Send us the link to your repo.
+---------------
 
+## Required Links to Add Before Submitting
 
 ### Deployed URL
 
