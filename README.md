@@ -26,10 +26,10 @@ I have successfully addressed all 4 required scenarios using a custom `ScrollCon
 ## 📹 Scenario Recordings (Proof of Work)
 | Scenario | Description | Link |
 | :--- | :--- | :--- |
-| **Scenario 1** | Basic Auto-Scroll during stream | [Watch Video](#) |
-| **Scenario 2** | Pause on Manual Scroll | [Watch Video](#) |
-| **Scenario 3** | Force Scroll on Send | [Watch Video](#) |
-| **Scenario 4** | Resume Auto-Scroll | [Watch Video](#) |
+| **Scenario 1** | Basic Auto-Scroll during stream | [https://drive.google.com/file/d/1VEzoN0icV-bPhqCZD1HrCkxDwCBQ-O32/view](#) |
+| **Scenario 2** | Pause on Manual Scroll | [https://drive.google.com/file/d/15eRb4ty4-phCqLIIvivH81aixa_BMfnt/view](#) |
+| **Scenario 3** | Force Scroll on Send | [https://drive.google.com/file/d/1Ijk8SGqRoDxVA-6-BQ4oze-Tjs8ZZ8oS/view](#) |
+| **Scenario 4** | Resume Auto-Scroll | [https://drive.google.com/file/d/1-13vQjrZwRIEJ6JLOQ-Xmg12YbyBv_dt/view](#) |
 
 
 ---
