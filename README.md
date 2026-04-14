@@ -1,68 +1,41 @@
-# Chat Auto-Scroll Challenge
+# 🚀 Flutter Gemini Chat - Smart Scroll Challenge
 
-## Setup
+This project is a solution to the Gemini Chat UI challenge. The core focus was to implement a professional, "human-like" auto-scroll behavior for streaming responses, ensuring a seamless user experience.
 
-1. Get a free Gemini API key from [ai.google.dev](https://ai.google.dev)
-2. Run `flutter pub get`
-3. Run `flutter run` (web, macOS, or any platform)
-4. Enter your API key and start chatting
+## 🌐 Live Demo
+You can try the live application here:
+[👉 Click to open Live Demo](https://mahmoudmohameddev1.github.io/chat-scroll-challenge/)
 
-## Your Task
+---
 
-This app has scroll UX issues. Compare it against the reference implementation and fix them.
+## 🛠️ Solutions Implemented
+I have successfully addressed all 4 required scenarios using a custom `ScrollController` logic combined with `NotificationListener`:
 
-**Reference:** https://iman-admin.github.io/chat-scroll-demo/
+1.  **Smart Auto-Scroll**: The view automatically scrolls to the bottom as long as the user is not manually inspecting previous messages.
+2.  **Manual Scroll Detection**: Auto-scroll pauses instantly if the user scrolls up (manual intervention).
+3.  **Forced Reset on Send**: Sending a new message resets the scroll state and forces a jump to the bottom to focus on the new conversation.
+4.  **Auto-Resume**: If the user manually scrolls back to the bottom while a stream is active, the auto-scroll resumes automatically.
 
-Test these scenarios in the reference demo before you start coding. Start by sending a message that produces a long response to fill the screen (e.g. _"Write a detailed essay about the history of the internet"_). If the response is too short, send another one.
+## 🏗️ Technical Highlights
+- **Threshold Logic**: Used a 100px threshold to determine if the user is "at the bottom" to prevent jerky scroll behavior.
+- **Scroll Direction Awareness**: Implemented `NotificationListener<UserScrollNotification>` to distinguish between system-driven and user-driven scrolling.
+- **Smooth UX**: Used `Curves.easeOut` with a 250ms duration for all programmatic scrolls to mimic premium chat apps like Telegram.
 
-1. Send a message and let the response stream in.
-2. While a response is streaming, scroll up manually.
-3. While scrolled up, send a new message.
-4. While a response is streaming, scroll back down to the bottom.
+---
 
-Your solution will be scored primarily on how closely it matches the reference. You are free to use any AI tools you'd like.
----------------
-
-## How to Submit
-
-1. Clone this repo into a **private** repository on your own GitHub account.
-2. Implement your solution.
-3. Deploy your solution to the web.
-4. Update this README with:
-   - The UX issues you identified and fixed.
-   - Your deployed URL.
-   - Include screen recordings for all five scenarios and the deployed URL below.
-5. Add **IMan-admin** as a collaborator to your private repo.
-6. Send us the link to your repo.
----------------
-
-## Required Links to Add Before Submitting
-
-### Deployed URL
-
-Replace the placeholder below with your live deployed app URL.
-
-[Live Demo - Replace with your deployed URL](https://your-deployed-url.com)
-
-### Screen Recordings
-Replace each placeholder below with your submitted recording link.  
-You must submit **all 4 recordings**.
+## 📹 Scenario Recordings (Proof of Work)
+| Scenario | Description | Link |
+| :--- | :--- | :--- |
+| **Scenario 1** | Basic Auto-Scroll during stream | [Watch Video](#) |
+| **Scenario 2** | Pause on Manual Scroll | [Watch Video](#) |
+| **Scenario 3** | Force Scroll on Send | [Watch Video](#) |
+| **Scenario 4** | Resume Auto-Scroll | [Watch Video](#) |
 
 
-- **Scenario 1 (Basic Auto-Scroll):** [Watch Recording - Replace with your Scenario 1 link](https://your-recording-link.com/scenario1)
-- **Scenario 2 (Pause on Manual Scroll):** [Watch Recording - Replace with your Scenario 2 link](https://your-recording-link.com/scenario2)
-- **Scenario 3 (Send While Scrolled Up):** [Watch Recording - Replace with your Scenario 3 link](https://your-recording-link.com/scenario3)
-- **Scenario 4 (Resume Auto-Scroll After Scroll Down):** [Watch Recording - Replace with your Scenario 4 link](https://your-recording-link.com/scenario4)
- 
+---
 
-## Evaluation Criteria
-
-- Does each scenario work correctly in isolation?
-- Do all four scenarios work together without regressions?
-- Does the behavior match the reference demo?
-- Is the code clean, testable, and well-separated?
----------------
-
-- ### Company Website
-
-[InterviewMan](https://interviewman.com)
+## 🚀 How to Run Locally
+1. Clone the repo: `git clone [https://github.com/mahmoudmohameddev1/chat-scroll-challenge]`
+2. Install dependencies: `flutter pub get`
+3. Run the app: `flutter run`
+4. Enter your Gemini API Key in the UI to start chatting.
