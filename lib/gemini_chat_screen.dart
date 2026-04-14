@@ -46,9 +46,9 @@ class _GeminiChatScreenState extends State<GeminiChatScreen> {
   StreamSubscription? _currentStreamSubscription;
   String? _currentStreamId;
 
-  // Smart auto-scroll state
-  bool _shouldAutoScroll = true; // Start with auto-scroll enabled
-  static const _scrollThreshold = 100.0; // pixels from bottom
+
+  bool _shouldAutoScroll = true; 
+  static const _scrollThreshold = 100.0;
 
   @override
   void initState() {
@@ -79,7 +79,7 @@ class _GeminiChatScreenState extends State<GeminiChatScreen> {
     super.dispose();
   }
 
-  /// Checks if the current scroll position is within threshold of the bottom
+ 
   bool _isAtBottom() {
     if (!_scrollController.hasClients) return false;
     final maxScroll = _scrollController.position.maxScrollExtent;
@@ -87,7 +87,7 @@ class _GeminiChatScreenState extends State<GeminiChatScreen> {
     return (maxScroll - currentScroll) <= _scrollThreshold;
   }
 
-  /// Animates to the bottom of the list with a smooth curve
+ 
   Future<void> _scrollToBottom() async {
     if (!_scrollController.hasClients) return;
 
@@ -98,25 +98,30 @@ class _GeminiChatScreenState extends State<GeminiChatScreen> {
     );
   }
 
-  /// Handles scroll notifications to detect user intent
+  
   bool _handleScrollNotification(ScrollNotification notification) {
     if (notification is UserScrollNotification) {
       if (notification.direction == ScrollDirection.reverse) {
-        // User scrolled down - check if we're at bottom to resume auto-scroll
-        if (_isAtBottom()) {
+
+        if (_shouldAutoScroll) {
           setState(() {
-            _shouldAutoScroll = true;
+            _shouldAutoScroll = false;
           });
         }
-      } else if (notification.direction == ScrollDirection.forward) {
-        // User scrolled up - pause auto-scroll
+      }
+    }
+
+
+    if (notification is ScrollUpdateNotification ||
+        notification is ScrollEndNotification) {
+      if (_isAtBottom() && !_shouldAutoScroll) {
         setState(() {
-          _shouldAutoScroll = false;
+          _shouldAutoScroll = true;
         });
       }
     }
 
-    return false; // Allow other listeners to handle the notification
+    return false;
   }
 
   void _stopCurrentStream() {
@@ -262,7 +267,7 @@ class _GeminiChatScreenState extends State<GeminiChatScreen> {
       ),
     );
 
-    // Force scroll to bottom when sending a new message
+
     setState(() {
       _shouldAutoScroll = true;
     });
