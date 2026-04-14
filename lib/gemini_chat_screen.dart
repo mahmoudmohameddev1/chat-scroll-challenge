@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cross_cache/cross_cache.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_chat_core/flutter_chat_core.dart'
     hide InMemoryChatController;
@@ -45,6 +46,10 @@ class _GeminiChatScreenState extends State<GeminiChatScreen> {
   StreamSubscription? _currentStreamSubscription;
   String? _currentStreamId;
 
+  // Smart auto-scroll state
+  bool _shouldAutoScroll = true; // Start with auto-scroll enabled
+  static const _scrollThreshold = 100.0; // pixels from bottom
+
   @override
   void initState() {
     super.initState();
@@ -72,6 +77,46 @@ class _GeminiChatScreenState extends State<GeminiChatScreen> {
     _scrollController.dispose();
     _crossCache.dispose();
     super.dispose();
+  }
+
+  /// Checks if the current scroll position is within threshold of the bottom
+  bool _isAtBottom() {
+    if (!_scrollController.hasClients) return false;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    return (maxScroll - currentScroll) <= _scrollThreshold;
+  }
+
+  /// Animates to the bottom of the list with a smooth curve
+  Future<void> _scrollToBottom() async {
+    if (!_scrollController.hasClients) return;
+
+    await _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+    );
+  }
+
+  /// Handles scroll notifications to detect user intent
+  bool _handleScrollNotification(ScrollNotification notification) {
+    if (notification is UserScrollNotification) {
+      if (notification.direction == ScrollDirection.reverse) {
+        // User scrolled down - check if we're at bottom to resume auto-scroll
+        if (_isAtBottom()) {
+          setState(() {
+            _shouldAutoScroll = true;
+          });
+        }
+      } else if (notification.direction == ScrollDirection.forward) {
+        // User scrolled up - pause auto-scroll
+        setState(() {
+          _shouldAutoScroll = false;
+        });
+      }
+    }
+
+    return false; // Allow other listeners to handle the notification
   }
 
   void _stopCurrentStream() {
@@ -119,85 +164,88 @@ class _GeminiChatScreenState extends State<GeminiChatScreen> {
       appBar: AppBar(title: const Text('Gemini Chat')),
       body: ChangeNotifierProvider.value(
         value: _streamManager,
-        child: Chat(
-          builders: Builders(
-            chatAnimatedListBuilder: (context, itemBuilder) {
-              return ChatAnimatedList(
-                scrollController: _scrollController,
-                itemBuilder: itemBuilder,
-              );
-            },
-            imageMessageBuilder: (
-              context,
-              message,
-              index, {
-              required bool isSentByMe,
-              MessageGroupStatus? groupStatus,
-            }) =>
-                FlyerChatImageMessage(
-              message: message,
-              index: index,
-              showTime: false,
-              showStatus: false,
+        child: NotificationListener<ScrollNotification>(
+          onNotification: _handleScrollNotification,
+          child: Chat(
+            builders: Builders(
+              chatAnimatedListBuilder: (context, itemBuilder) {
+                return ChatAnimatedList(
+                  scrollController: _scrollController,
+                  itemBuilder: itemBuilder,
+                );
+              },
+              imageMessageBuilder: (
+                context,
+                message,
+                index, {
+                required bool isSentByMe,
+                MessageGroupStatus? groupStatus,
+              }) =>
+                  FlyerChatImageMessage(
+                    message: message,
+                    index: index,
+                    showTime: false,
+                    showStatus: false,
+                  ),
+              composerBuilder: (context) => _Composer(
+                isStreaming: _isStreaming,
+                onStop: _stopCurrentStream,
+              ),
+              textMessageBuilder: (
+                context,
+                message,
+                index, {
+                required bool isSentByMe,
+                MessageGroupStatus? groupStatus,
+              }) =>
+                  FlyerChatTextMessage(
+                    message: message,
+                    index: index,
+                    showTime: false,
+                    showStatus: false,
+                    receivedBackgroundColor: Colors.transparent,
+                    padding: message.authorId == _agent.id
+                        ? EdgeInsets.zero
+                        : const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  ),
+              textStreamMessageBuilder: (
+                context,
+                message,
+                index, {
+                required bool isSentByMe,
+                MessageGroupStatus? groupStatus,
+              }) {
+                final streamState = context
+                    .watch<GeminiStreamManager>()
+                    .getState(message.streamId);
+                return FlyerChatTextStreamMessage(
+                  message: message,
+                  index: index,
+                  streamState: streamState,
+                  chunkAnimationDuration: _kChunkAnimationDuration,
+                  showTime: false,
+                  showStatus: false,
+                  receivedBackgroundColor: Colors.transparent,
+                  padding: message.authorId == _agent.id
+                      ? EdgeInsets.zero
+                      : const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                );
+              },
             ),
-            composerBuilder: (context) => _Composer(
-              isStreaming: _isStreaming,
-              onStop: _stopCurrentStream,
+            chatController: _chatController,
+            crossCache: _crossCache,
+            currentUserId: _currentUser.id,
+            onAttachmentTap: _handleAttachmentTap,
+            onMessageSend: _handleMessageSend,
+            resolveUser: (id) => Future.value(
+              switch (id) {
+                'me' => _currentUser,
+                'agent' => _agent,
+                _ => null,
+              },
             ),
-            textMessageBuilder: (
-              context,
-              message,
-              index, {
-              required bool isSentByMe,
-              MessageGroupStatus? groupStatus,
-            }) =>
-                FlyerChatTextMessage(
-              message: message,
-              index: index,
-              showTime: false,
-              showStatus: false,
-              receivedBackgroundColor: Colors.transparent,
-              padding: message.authorId == _agent.id
-                  ? EdgeInsets.zero
-                  : const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            ),
-            textStreamMessageBuilder: (
-              context,
-              message,
-              index, {
-              required bool isSentByMe,
-              MessageGroupStatus? groupStatus,
-            }) {
-              final streamState = context
-                  .watch<GeminiStreamManager>()
-                  .getState(message.streamId);
-              return FlyerChatTextStreamMessage(
-                message: message,
-                index: index,
-                streamState: streamState,
-                chunkAnimationDuration: _kChunkAnimationDuration,
-                showTime: false,
-                showStatus: false,
-                receivedBackgroundColor: Colors.transparent,
-                padding: message.authorId == _agent.id
-                    ? EdgeInsets.zero
-                    : const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              );
-            },
+            theme: ChatTheme.fromThemeData(theme),
           ),
-          chatController: _chatController,
-          crossCache: _crossCache,
-          currentUserId: _currentUser.id,
-          onAttachmentTap: _handleAttachmentTap,
-          onMessageSend: _handleMessageSend,
-          resolveUser: (id) => Future.value(
-            switch (id) {
-              'me' => _currentUser,
-              'agent' => _agent,
-              _ => null,
-            },
-          ),
-          theme: ChatTheme.fromThemeData(theme),
         ),
       ),
     );
@@ -213,6 +261,13 @@ class _GeminiChatScreenState extends State<GeminiChatScreen> {
         metadata: isOnlyEmoji(text) ? {'isOnlyEmoji': true} : null,
       ),
     );
+
+    // Force scroll to bottom when sending a new message
+    setState(() {
+      _shouldAutoScroll = true;
+    });
+    await Future.delayed(const Duration(milliseconds: 100));
+    await _scrollToBottom();
 
     _sendContent(Content.text(text));
   }
@@ -278,6 +333,11 @@ class _GeminiChatScreenState extends State<GeminiChatScreen> {
             if (streamMessage == null) return;
 
             _streamManager.addChunk(streamId, textChunk);
+
+            // Trigger auto-scroll if enabled
+            if (_shouldAutoScroll && _isStreaming) {
+              await _scrollToBottom();
+            }
           }
         },
         onDone: () async {
